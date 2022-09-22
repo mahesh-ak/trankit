@@ -271,7 +271,13 @@ class TPipeline:
         self._config.itos[UPOS] = {v: k for k, v in self.train_set.vocabs[UPOS].items()}
         self._config.itos[XPOS] = {v: k for k, v in self.train_set.vocabs[XPOS].items()}
         self._config.itos[FEATS] = {v: k for k, v in self.train_set.vocabs[FEATS].items()}
+        self._config.itos[CAT] = {v: k for k, v in self.train_set.vocabs[CAT].items()}
+        self._config.itos[GEN] = {v: k for k, v in self.train_set.vocabs[GEN].items()}
         self._config.itos[NUM] = {v: k for k, v in self.train_set.vocabs[NUM].items()}
+        self._config.itos[PERS] = {v: k for k, v in self.train_set.vocabs[PERS].items()}
+        self._config.itos[CASE] = {v: k for k, v in self.train_set.vocabs[CASE].items()}
+        self._config.itos[VIB] = {v: k for k, v in self.train_set.vocabs[VIB].items()}
+        self._config.itos[TAM] = {v: k for k, v in self.train_set.vocabs[TAM].items()}
 
         self._config.itos[DEPREL] = {v: k for k, v in self.train_set.vocabs[DEPREL].items()}
 
@@ -530,13 +536,18 @@ class TPipeline:
             predicted_upos = predictions[0]
             predicted_xpos = predictions[1]
             predicted_feats = predictions[2]
-            ## Mind the number
-            predicted_num = predictions[4]
-
+            ## Mind the number starts from 4
+            predicted_cat, predicted_gen, predicted_num, predicted_pers, predicted_case, predicted_vib, predicted_tam = predictions[4:]
             predicted_upos = predicted_upos.data.cpu().numpy().tolist()
             predicted_xpos = predicted_xpos.data.cpu().numpy().tolist()
             predicted_feats = predicted_feats.data.cpu().numpy().tolist()
+            predicted_cat = predicted_cat.data.cpu().numpy().tolist()
+            predicted_gen = predicted_gen.data.cpu().numpy().tolist()
             predicted_num = predicted_num.data.cpu().numpy().tolist()
+            predicted_pers = predicted_pers.data.cpu().numpy().tolist()
+            predicted_case = predicted_case.data.cpu().numpy().tolist()
+            predicted_vib = predicted_vib.data.cpu().numpy().tolist()
+            predicted_tam = predicted_tam.data.cpu().numpy().tolist()
 
 
             # head, deprel
@@ -571,10 +582,28 @@ class TPipeline:
                     feats_name = self._config.itos[FEATS][pred_feats_id]
                     data_set.conllu_doc[sentid][wordid][FEATS] = feats_name
                     
-                    # num
+                   # new
+                    pred_cat_id = predicted_cat[bid][i]
+                    pred_gen_id = predicted_gen[bid][i]
                     pred_num_id = predicted_num[bid][i]
+                    pred_pers_id = predicted_pers[bid][i]
+                    pred_case_id = predicted_case[bid][i]
+                    pred_vib_id = predicted_vib[bid][i]
+                    pred_tam_id = predicted_tam[bid][i]
+                    cat_name = self._config.itos[CAT][pred_cat_id]
+                    gen_name = self._config.itos[GEN][pred_gen_id]
                     num_name = self._config.itos[NUM][pred_num_id]
+                    pers_name = self._config.itos[PERS][pred_pers_id]
+                    case_name = self._config.itos[CASE][pred_case_id]
+                    vib_name = self._config.itos[VIB][pred_vib_id]
+                    tam_name = self._config.itos[TAM][pred_tam_id]
+                    data_set.conllu_doc[sentid][wordid][CAT] = cat_name
+                    data_set.conllu_doc[sentid][wordid][GEN] = gen_name
                     data_set.conllu_doc[sentid][wordid][NUM] = num_name
+                    data_set.conllu_doc[sentid][wordid][PERS] = pers_name
+                    data_set.conllu_doc[sentid][wordid][CASE] = case_name
+                    data_set.conllu_doc[sentid][wordid][VIB] = vib_name
+                    data_set.conllu_doc[sentid][wordid][TAM] = tam_name
 
 
 

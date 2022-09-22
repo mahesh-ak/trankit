@@ -29,7 +29,15 @@ NER = 'ner'
 LANG = 'lang'
 
 ## New fields
+CAT = 'cat'
+GEN = 'gen'
 NUM = 'num'
+PERS = 'pers'
+CASE = 'case'
+VIB = 'vib'
+TAM = 'tam'
+
+NEW = [CAT, GEN, NUM, PERS, CASE, VIB, TAM]
 
 FIELD_TO_IDX = {ID: 0, TEXT: 1, LEMMA: 2, UPOS: 3, XPOS: 4, FEATS: 5, HEAD: 6, DEPREL: 7, DEPS: 8, MISC: 9}
 
@@ -87,9 +95,9 @@ class CoNLL:
         """
         token_dict = {}
         for field in FIELD_TO_IDX:
-            if field == NUM:
+            if field in NEW:
                 feats_value = token_conll[FIELD_TO_IDX[FEATS]]
-                value = [feat for feat in feats_value.split('=|') if feat.split('-',1)[0] == NUM][0]
+                value = [feat for feat in feats_value.split('=|') if feat.split('-',1)[0] == field][0]
             else:
                 value = token_conll[FIELD_TO_IDX[field]]
             if value != '_':

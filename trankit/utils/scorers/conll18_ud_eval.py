@@ -101,7 +101,7 @@ import unittest
 
 # CoNLL-U column names
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC = range(10)
-NUM, = range(10,11)
+CAT, GEN, NUM, PERS, CASE, VIB, TAM = range(10,17)
 
 # Content and functional relations
 CONTENT_DEPRELS = {
@@ -175,8 +175,15 @@ def load_conllu(file):
             self.columns[FEATS] = columns[FEATS]
             #self.columns[FEATS] = "|".join(sorted(feat for feat in columns[FEATS].split("|")))
                                                   #if feat.split("=", 1)[0] in UNIVERSAL_FEATURES))
-            # New feature NUM
+            # New features
+            self.columns[CAT] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='cat']
+            self.columns[GEN] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='gen']
             self.columns[NUM] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='num']
+            self.columns[PERS] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='pers']
+            self.columns[CASE] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='case']
+            self.columns[VIB] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='vib']
+            self.columns[TAM] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='tam']
+
             # Let's ignore language-specific deprel subtypes.
             self.columns[DEPREL] = columns[DEPREL].split(":")[0]
             # Precompute which deprels are CONTENT_DEPRELS and which FUNCTIONAL_DEPRELS
@@ -479,7 +486,13 @@ def evaluate(gold_ud, system_ud):
         "UPOS": alignment_score(alignment, lambda w, _: w.columns[UPOS]),
         "XPOS": alignment_score(alignment, lambda w, _: w.columns[XPOS]),
         "UFeats": alignment_score(alignment, lambda w, _: w.columns[FEATS]),
-        "NUM": alignment_score(alignment, lambda w, _: w.columns[NUM]),
+        "CAT" : alignment_score(alignment, lambda w, _: w.columns[CAT]),
+        "GEN" : alignment_score(alignment, lambda w, _: w.columns[GEN]),
+        "NUM" : alignment_score(alignment, lambda w, _: w.columns[NUM]),
+        "PERS" : alignment_score(alignment, lambda w, _: w.columns[PERS]),
+        "CASE" : alignment_score(alignment, lambda w, _: w.columns[CASE]),
+        "VIB" : alignment_score(alignment, lambda w, _: w.columns[VIB]),
+        "TAM" : alignment_score(alignment, lambda w, _: w.columns[TAM]),
         "AllTags": alignment_score(alignment, lambda w, _: (w.columns[UPOS], w.columns[XPOS], w.columns[FEATS])),
         "Lemmas": alignment_score(alignment, lambda w, ga: w.columns[LEMMA] if ga(w).columns[LEMMA] != "_" else "_"),
         "UAS": alignment_score(alignment, lambda w, ga: ga(w.parent)),
@@ -536,8 +549,9 @@ def main():
         else:
             print("Metric     | Precision |    Recall |  F1 Score | AligndAcc")
         print("-----------+-----------+-----------+-----------+-----------")
-        for metric in ["Tokens", "Sentences", "Words", "UPOS", "XPOS", "UFeats", "NUM", "AllTags", "Lemmas", "UAS", "LAS",
-                       "CLAS", "MLAS", "BLEX"]:
+        for metric in ["Tokens", "Sentences", "Words", "UPOS", "XPOS", "UFeats", \
+                        "CAT","GEN","NUM","PERS","CASE","VIB","TAM", \
+                        "AllTags", "Lemmas", "UAS", "LAS", "CLAS", "MLAS", "BLEX"]:
             if args.counts:
                 print("{:11}|{:10} |{:10} |{:10} |{:10}".format(
                     metric,

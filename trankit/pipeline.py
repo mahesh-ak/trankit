@@ -238,7 +238,13 @@ class Pipeline:
         self._config.itos[lang][UPOS] = {v: k for k, v in vocabs[UPOS].items()}
         self._config.itos[lang][XPOS] = {v: k for k, v in vocabs[XPOS].items()}
         self._config.itos[lang][FEATS] = {v: k for k, v in vocabs[FEATS].items()}
+        self._config.itos[lang][CAT] = {v: k for k, v in vocabs[CAT].items()}
+        self._config.itos[lang][GEN] = {v: k for k, v in vocabs[GEN].items()}
         self._config.itos[lang][NUM] = {v: k for k, v in vocabs[NUM].items()}
+        self._config.itos[lang][PERS] = {v: k for k, v in vocabs[PERS].items()}
+        self._config.itos[lang][CASE] = {v: k for k, v in vocabs[CASE].items()}
+        self._config.itos[lang][VIB] = {v: k for k, v in vocabs[VIB].items()}
+        self._config.itos[lang][TAM] = {v: k for k, v in vocabs[TAM].items()}
 
         self._config.itos[lang][DEPREL] = {v: k for k, v in vocabs[DEPREL].items()}
         # add tokenizer
@@ -281,7 +287,13 @@ class Pipeline:
             self._config.itos[lang][UPOS] = {v: k for k, v in vocabs[UPOS].items()}
             self._config.itos[lang][XPOS] = {v: k for k, v in vocabs[XPOS].items()}
             self._config.itos[lang][FEATS] = {v: k for k, v in vocabs[FEATS].items()}
+            self._config.itos[lang][CAT] = {v: k for k, v in vocabs[CAT].items()}
+            self._config.itos[lang][GEN] = {v: k for k, v in vocabs[GEN].items()}
             self._config.itos[lang][NUM] = {v: k for k, v in vocabs[NUM].items()}
+            self._config.itos[lang][PERS] = {v: k for k, v in vocabs[PERS].items()}
+            self._config.itos[lang][CASE] = {v: k for k, v in vocabs[CASE].items()}
+            self._config.itos[lang][VIB] = {v: k for k, v in vocabs[VIB].items()}
+            self._config.itos[lang][TAM] = {v: k for k, v in vocabs[TAM].items()}
 
             self._config.itos[lang][DEPREL] = {v: k for k, v in vocabs[DEPREL].items()}
             # ner vocabs
@@ -741,13 +753,18 @@ class Pipeline:
             predicted_upos = predictions[0]
             predicted_xpos = predictions[1]
             predicted_feats = predictions[2]
-            ## Mind the number
-            predicted_num = predictions[4]
-
+            ## Mind the number starts from 4
+            predicted_cat, predicted_gen, predicted_num, predicted_pers, predicted_case, predicted_vib, predicted_tam = predictions[4:]
             predicted_upos = predicted_upos.data.cpu().numpy().tolist()
             predicted_xpos = predicted_xpos.data.cpu().numpy().tolist()
             predicted_feats = predicted_feats.data.cpu().numpy().tolist()
+            predicted_cat = predicted_cat.data.cpu().numpy().tolist()
+            predicted_gen = predicted_gen.data.cpu().numpy().tolist()
             predicted_num = predicted_num.data.cpu().numpy().tolist()
+            predicted_pers = predicted_pers.data.cpu().numpy().tolist()
+            predicted_case = predicted_case.data.cpu().numpy().tolist()
+            predicted_vib = predicted_vib.data.cpu().numpy().tolist()
+            predicted_tam = predicted_tam.data.cpu().numpy().tolist()
 
             # head, deprel
             predicted_dep = predictions[3]
@@ -782,10 +799,28 @@ class Pipeline:
                     feats_name = self._config.itos[self._config.active_lang][FEATS][pred_feats_id]
                     test_set.conllu_doc[sentid][wordid][FEATS] = feats_name
                     
-                    # num
+                    # new
+                    pred_cat_id = predicted_cat[bid][i]
+                    pred_gen_id = predicted_gen[bid][i]
                     pred_num_id = predicted_num[bid][i]
+                    pred_pers_id = predicted_pers[bid][i]
+                    pred_case_id = predicted_case[bid][i]
+                    pred_vib_id = predicted_vib[bid][i]
+                    pred_tam_id = predicted_tam[bid][i]
+                    cat_name = self._config.itos[self._config.active_lang][CAT][pred_cat_id]
+                    gen_name = self._config.itos[self._config.active_lang][GEN][pred_gen_id]
                     num_name = self._config.itos[self._config.active_lang][NUM][pred_num_id]
+                    pers_name = self._config.itos[self._config.active_lang][PERS][pred_pers_id]
+                    case_name = self._config.itos[self._config.active_lang][CASE][pred_case_id]
+                    vib_name = self._config.itos[self._config.active_lang][VIB][pred_vib_id]
+                    tam_name = self._config.itos[self._config.active_lang][TAM][pred_tam_id]
+                    test_set.conllu_doc[sentid][wordid][CAT] = cat_name
+                    test_set.conllu_doc[sentid][wordid][GEN] = gen_name
                     test_set.conllu_doc[sentid][wordid][NUM] = num_name
+                    test_set.conllu_doc[sentid][wordid][PERS] = pers_name
+                    test_set.conllu_doc[sentid][wordid][CASE] = case_name
+                    test_set.conllu_doc[sentid][wordid][VIB] = vib_name
+                    test_set.conllu_doc[sentid][wordid][TAM] = tam_name
 
                     # head
                     test_set.conllu_doc[sentid][wordid][HEAD] = int(pred_tokens[bid][i][0])
@@ -826,13 +861,18 @@ class Pipeline:
             predicted_upos = predictions[0]
             predicted_xpos = predictions[1]
             predicted_feats = predictions[2]
-            ## Mind the number
-            predicted_num = predictions[4]
-
+            ## Mind the number starts from 4
+            predicted_cat, predicted_gen, predicted_num, predicted_pers, predicted_case, predicted_vib, predicted_tam = predictions[4:]
             predicted_upos = predicted_upos.data.cpu().numpy().tolist()
             predicted_xpos = predicted_xpos.data.cpu().numpy().tolist()
             predicted_feats = predicted_feats.data.cpu().numpy().tolist()
+            predicted_cat = predicted_cat.data.cpu().numpy().tolist()
+            predicted_gen = predicted_gen.data.cpu().numpy().tolist()
             predicted_num = predicted_num.data.cpu().numpy().tolist()
+            predicted_pers = predicted_pers.data.cpu().numpy().tolist()
+            predicted_case = predicted_case.data.cpu().numpy().tolist()
+            predicted_vib = predicted_vib.data.cpu().numpy().tolist()
+            predicted_tam = predicted_tam.data.cpu().numpy().tolist()
 
 
             # head, deprel
@@ -868,11 +908,28 @@ class Pipeline:
                     feats_name = self._config.itos[self._config.active_lang][FEATS][pred_feats_id]
                     test_set.conllu_doc[sentid][wordid][FEATS] = feats_name
 
-                    # num
+                    # new
+                    pred_cat_id = predicted_cat[bid][i]
+                    pred_gen_id = predicted_gen[bid][i]
                     pred_num_id = predicted_num[bid][i]
+                    pred_pers_id = predicted_pers[bid][i]
+                    pred_case_id = predicted_case[bid][i]
+                    pred_vib_id = predicted_vib[bid][i]
+                    pred_tam_id = predicted_tam[bid][i]
+                    cat_name = self._config.itos[self._config.active_lang][CAT][pred_cat_id]
+                    gen_name = self._config.itos[self._config.active_lang][GEN][pred_gen_id]
                     num_name = self._config.itos[self._config.active_lang][NUM][pred_num_id]
+                    pers_name = self._config.itos[self._config.active_lang][PERS][pred_pers_id]
+                    case_name = self._config.itos[self._config.active_lang][CASE][pred_case_id]
+                    vib_name = self._config.itos[self._config.active_lang][VIB][pred_vib_id]
+                    tam_name = self._config.itos[self._config.active_lang][TAM][pred_tam_id]
+                    test_set.conllu_doc[sentid][wordid][CAT] = cat_name
+                    test_set.conllu_doc[sentid][wordid][GEN] = gen_name
                     test_set.conllu_doc[sentid][wordid][NUM] = num_name
-
+                    test_set.conllu_doc[sentid][wordid][PERS] = pers_name
+                    test_set.conllu_doc[sentid][wordid][CASE] = case_name
+                    test_set.conllu_doc[sentid][wordid][VIB] = vib_name
+                    test_set.conllu_doc[sentid][wordid][TAM] = tam_name
 
                     # head
                     test_set.conllu_doc[sentid][wordid][HEAD] = int(pred_tokens[bid][i][0])

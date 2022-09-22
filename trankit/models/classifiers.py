@@ -74,7 +74,13 @@ class PosDepClassifier(nn.Module):
         self.upos_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[UPOS]))
         self.xpos_ffn = nn.Linear(self.xlmr_dim + 50, len(self.vocabs[XPOS]))
         self.feats_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[FEATS]))
+        self.cat_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[CAT]))
+        self.gen_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[GEN]))
         self.num_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[NUM]))
+        self.pers_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[PERS]))
+        self.case_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[CASE]))
+        self.vib_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[VIB]))
+        self.tam_ffn = nn.Linear(self.xlmr_dim, len(self.vocabs[TAM]))
 
 
         self.down_dim = self.xlmr_dim // 4
@@ -117,15 +123,32 @@ class PosDepClassifier(nn.Module):
         # feats
         feats_scores = self.feats_ffn(word_reprs)
         feats_scores = feats_scores.view(-1, len(self.vocabs[FEATS]))
-        # num
+        # new 
+        cat_scores = self.cat_ffn(word_reprs)
+        gen_scores = self.gen_ffn(word_reprs)
         num_scores = self.num_ffn(word_reprs)
-        num_scores = num_scores.view(-1, len(self.vocabs[NUM]))
-
+        pers_scores = self.pers_ffn(word_reprs)
+        case_scores = self.case_ffn(word_reprs)
+        vib_scores = self.vib_ffn(word_reprs)
+        tam_scores = self.tam_ffn(word_reprs)
+        cat_scores = cat_scores.view(-1,len(self.vocabs[CAT]))
+        gen_scores = gen_scores.view(-1,len(self.vocabs[GEN]))
+        num_scores = num_scores.view(-1,len(self.vocabs[NUM]))
+        pers_scores = pers_scores.view(-1,len(self.vocabs[PERS]))
+        case_scores = case_scores.view(-1,len(self.vocabs[CASE]))
+        vib_scores = vib_scores.view(-1,len(self.vocabs[VIB]))
+        tam_scores = tam_scores.view(-1,len(self.vocabs[TAM]))
 
         loss = self.criteria(upos_scores, batch.upos_type_idxs) + \
                self.criteria(xpos_scores, batch.xpos_type_idxs) + \
                self.criteria(feats_scores, batch.feats_type_idxs) + \
-               self.criteria(num_scores, batch.num_type_idxs)  
+               self.criteria(cat_scores, batch.cat_type_idxs) + \
+               self.criteria(gen_scores, batch.gen_type_idxs) + \
+               self.criteria(num_scores, batch.num_type_idxs) + \
+               self.criteria(pers_scores, batch.pers_type_idxs) + \
+               self.criteria(case_scores, batch.case_type_idxs) + \
+               self.criteria(vib_scores, batch.vib_type_idxs) + \
+               self.criteria(tam_scores, batch.tam_type_idxs)  
 
 
         # head
@@ -170,9 +193,22 @@ class PosDepClassifier(nn.Module):
         feats_scores = self.feats_ffn(word_reprs)
         predicted_feats = torch.argmax(feats_scores, dim=2)
 
-        # num
+        # new
+        cat_scores = self.cat_ffn(word_reprs)
+        gen_scores = self.gen_ffn(word_reprs)
         num_scores = self.num_ffn(word_reprs)
+        pers_scores = self.pers_ffn(word_reprs)
+        case_scores = self.case_ffn(word_reprs)
+        vib_scores = self.vib_ffn(word_reprs)
+        tam_scores = self.tam_ffn(word_reprs)
+        predicted_cat = torch.argmax(cat_scores, dim=2)
+        predicted_gen = torch.argmax(gen_scores, dim=2)
         predicted_num = torch.argmax(num_scores, dim=2)
+        predicted_pers = torch.argmax(pers_scores, dim=2)
+        predicted_case = torch.argmax(case_scores, dim=2)
+        predicted_vib = torch.argmax(vib_scores, dim=2)
+        predicted_tam = torch.argmax(tam_scores, dim=2)
+
 
         # head
         dep_reprs = torch.cat(
@@ -189,7 +225,7 @@ class PosDepClassifier(nn.Module):
         dep_preds = []
         dep_preds.append(F.log_softmax(unlabeled_scores, 2).detach().cpu().numpy())
         dep_preds.append(deprel_scores.max(3)[1].detach().cpu().numpy())
-        return predicted_upos, predicted_xpos, predicted_feats, dep_preds, predicted_num
+        return predicted_upos, predicted_xpos, predicted_feats, dep_preds, predicted_cat, predicted_gen, predicted_num, predicted_pers, predicted_case, predicted_vib, predicted_tam
 
 
 class TokenizerClassifier(nn.Module):

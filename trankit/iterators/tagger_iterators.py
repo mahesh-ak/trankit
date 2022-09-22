@@ -5,19 +5,18 @@ instance_fields = [
     'sent_index',
     'words', 'word_num', 'word_ids', 'word_span_idxs',
     'piece_idxs', 'attention_masks', 'word_lens',
-    'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs', 'num_type_idxs',
+    'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs', 
     'head_idxs', 'deprel_idxs', 'word_mask'
-]
+] + [f'{new}_type_idxs' for new in NEW]
 
 batch_fields = [
     'sent_index',
     'words', 'word_num', 'word_ids', 'word_span_idxs',
     'piece_idxs', 'attention_masks', 'word_lens',
-    'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs', 'num_type_idxs',
-    'upos_ids', 'xpos_ids', 'feats_ids', 'num_ids',
+    'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs',
+    'upos_ids', 'xpos_ids', 'feats_ids',
     'head_idxs', 'deprel_idxs', 'word_mask'
-]
-
+] + [f'{new}_type_idxs' for new in NEW] + [f'{new}_ids' for new in NEW]
 Instance = namedtuple('Instance', field_names=instance_fields)
 
 Batch = namedtuple('Batch', field_names=batch_fields)
@@ -69,18 +68,18 @@ class TaggerDatasetLive(Dataset):
             if len(flat_pieces) > self.max_input_length - 2:
                 sub_insts = []
                 cur_inst = deepcopy(inst)
-                for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, NUM, HEAD, DEPREL, 'flat_pieces']:
+                for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, 'flat_pieces'] + NEW:
                     cur_inst[key] = []
 
                 for i in range(len(inst['words'])):
-                    for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, NUM, HEAD, DEPREL]:
+                    for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL] + NEW:
                         cur_inst[key].append(inst[key][i])
                     cur_inst['flat_pieces'].extend(pieces[i])
                     if len(cur_inst['flat_pieces']) >= self.max_input_length - 10:
                         sub_insts.append(cur_inst)
 
                         cur_inst = deepcopy(inst)
-                        for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, NUM, HEAD, DEPREL, 'flat_pieces']:
+                        for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, 'flat_pieces'] + NEW:
                             cur_inst[key] = []
 
                 if len(cur_inst['flat_pieces']) > 0:
@@ -130,7 +129,14 @@ class TaggerDatasetLive(Dataset):
             upos_type_idxs = [self.vocabs[UPOS][upos] for upos in inst[UPOS]]
             xpos_type_idxs = [self.vocabs[XPOS][xpos] for xpos in inst[XPOS]]
             feats_type_idxs = [self.vocabs[FEATS][feats] for feats in inst[FEATS]]
+            cat_type_idxs = [self.vocabs[CAT][cat] for cat in inst[CAT]]
+            gen_type_idxs = [self.vocabs[GEN][gen] for gen in inst[GEN]]
             num_type_idxs = [self.vocabs[NUM][num] for num in inst[NUM]]
+            pers_type_idxs = [self.vocabs[PERS][pers] for pers in inst[PERS]]
+            case_type_idxs = [self.vocabs[CASE][case] for case in inst[CASE]]
+            vib_type_idxs = [self.vocabs[VIB][vib] for vib in inst[VIB]]
+            tam_type_idxs = [self.vocabs[TAM][tam] for tam in inst[TAM]]
+
 
             assert len(edit_type_idxs) == len(inst['words'])
 
@@ -152,7 +158,13 @@ class TaggerDatasetLive(Dataset):
                 upos_type_idxs=upos_type_idxs,
                 xpos_type_idxs=xpos_type_idxs,
                 feats_type_idxs=feats_type_idxs,
+                cat_type_idxs=cat_type_idxs,
+                gen_type_idxs=gen_type_idxs,
                 num_type_idxs=num_type_idxs,
+                pers_type_idxs=pers_type_idxs,
+                case_type_idxs=case_type_idxs,
+                vib_type_idxs=vib_type_idxs,
+                tam_type_idxs=tam_type_idxs,
                 head_idxs=head_idxs,
                 deprel_idxs=deprel_idxs,
                 word_mask=word_mask
@@ -176,9 +188,22 @@ class TaggerDatasetLive(Dataset):
         batch_upos_type_idxs = []
         batch_xpos_type_idxs = []
         batch_feats_type_idxs = []
-        batch_num_type_idxs = []
+        batch_cat_type_idxs =[]
+        batch_gen_type_idxs =[]
+        batch_num_type_idxs =[]
+        batch_pers_type_idxs =[]
+        batch_case_type_idxs = []
+        batch_vib_type_idxs =[]
+        batch_tam_type_idxs =[]
 
-        batch_upos_ids, batch_xpos_ids, batch_feats_ids, batch_num_ids = [], [], [], []
+        batch_upos_ids, batch_xpos_ids, batch_feats_ids = [], [], []
+        batch_cat_ids = []
+        batch_gen_ids = []
+        batch_num_ids = []
+        batch_pers_ids = []
+        batch_case_ids = []
+        batch_vib_ids = []
+        batch_tam_ids = []
 
         batch_head_ids, batch_deprel_ids, batch_word_mask = [], [], []
 
@@ -201,8 +226,13 @@ class TaggerDatasetLive(Dataset):
                                         [-100] * (max_word_num - inst.word_num))
             batch_feats_type_idxs.extend(inst.feats_type_idxs +
                                          [-100] * (max_word_num - inst.word_num))
-            batch_num_type_idxs.extend(inst.num_type_idxs +
-                                        [-100] * (max_word_num - inst.word_num))
+            batch_cat_type_idxs.extend(inst.cat_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_gen_type_idxs.extend(inst.gen_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_num_type_idxs.extend(inst.num_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_pers_type_idxs.extend(inst.pers_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_case_type_idxs.extend(inst.case_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_vib_type_idxs.extend(inst.vib_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_tam_type_idxs.extend(inst.tam_type_idxs + [-100] * (max_word_num - inst.word_num))
             # head, deprel
             batch_head_ids.append(inst.head_idxs + [0] * (max_word_num - inst.word_num))
             batch_deprel_ids.append(inst.deprel_idxs + [0] * (max_word_num - inst.word_num))
@@ -211,7 +241,13 @@ class TaggerDatasetLive(Dataset):
             batch_upos_ids.append(inst.upos_type_idxs + [0] * (max_word_num - inst.word_num))
             batch_xpos_ids.append(inst.xpos_type_idxs + [0] * (max_word_num - inst.word_num))
             batch_feats_ids.append(inst.feats_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_cat_ids.append(inst.cat_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_gen_ids.append(inst.gen_type_idxs + [0] * (max_word_num - inst.word_num))
             batch_num_ids.append(inst.num_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_pers_ids.append(inst.pers_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_case_ids.append(inst.case_type_idxs + [0] * (max_word_num - inst.word_num)) 
+            batch_vib_ids.append(inst.vib_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_tam_ids.append(inst.tam_type_idxs + [0] * (max_word_num - inst.word_num))
 
         batch_piece_idxs = torch.tensor(batch_piece_idxs, dtype=torch.long, device=self.config.device)
         batch_attention_masks = torch.tensor(batch_attention_masks, dtype=torch.float16, device=self.config.device)
@@ -221,11 +257,23 @@ class TaggerDatasetLive(Dataset):
         batch_upos_type_idxs = torch.tensor(batch_upos_type_idxs, dtype=torch.long, device=self.config.device)
         batch_xpos_type_idxs = torch.tensor(batch_xpos_type_idxs, dtype=torch.long, device=self.config.device)
         batch_feats_type_idxs = torch.tensor(batch_feats_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_cat_type_idxs = torch.tensor(batch_cat_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_gen_type_idxs = torch.tensor(batch_gen_type_idxs, dtype=torch.long, device=self.config.device)
         batch_num_type_idxs = torch.tensor(batch_num_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_pers_type_idxs = torch.tensor(batch_pers_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_case_type_idxs = torch.tensor(batch_case_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_vib_type_idxs = torch.tensor(batch_vib_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_tam_type_idxs = torch.tensor(batch_tam_type_idxs, dtype=torch.long, device=self.config.device)
 
         batch_upos_ids = torch.tensor(batch_upos_ids, dtype=torch.long, device=self.config.device)
         batch_xpos_ids = torch.tensor(batch_xpos_ids, dtype=torch.long, device=self.config.device)
+        batch_cat_ids = torch.tensor(batch_cat_ids, dtype=torch.long, device=self.config.device)
+        batch_gen_ids = torch.tensor(batch_gen_ids, dtype=torch.long, device=self.config.device)
         batch_num_ids = torch.tensor(batch_num_ids, dtype=torch.long, device=self.config.device)
+        batch_pers_ids = torch.tensor(batch_pers_ids, dtype=torch.long, device=self.config.device)
+        batch_case_ids = torch.tensor(batch_case_ids, dtype=torch.long, device=self.config.device)
+        batch_vib_ids = torch.tensor(batch_vib_ids, dtype=torch.long, device=self.config.device)
+        batch_tam_ids = torch.tensor(batch_tam_ids, dtype=torch.long, device=self.config.device)
 
         batch_head_ids = torch.tensor(batch_head_ids, dtype=torch.long, device=self.config.device)
         batch_deprel_ids = torch.tensor(batch_deprel_ids, dtype=torch.long, device=self.config.device)
@@ -244,11 +292,23 @@ class TaggerDatasetLive(Dataset):
             upos_type_idxs=batch_upos_type_idxs,
             xpos_type_idxs=batch_xpos_type_idxs,
             feats_type_idxs=batch_feats_type_idxs,
-            num_type_idxs=batch_num_type_idxs,
+            cat_type_idxs = batch_cat_type_idxs,
+            gen_type_idxs = batch_gen_type_idxs,
+            num_type_idxs = batch_num_type_idxs,
+            pers_type_idxs = batch_pers_type_idxs,
+            case_type_idxs = batch_case_type_idxs,
+            vib_type_idxs = batch_vib_type_idxs,
+            tam_type_idxs = batch_tam_type_idxs,
             upos_ids=batch_upos_ids,
             xpos_ids=batch_xpos_ids,
             feats_ids=batch_xpos_ids,
+            cat_ids=batch_cat_ids,
+            gen_ids=batch_gen_ids,
             num_ids=batch_num_ids,
+            pers_ids=batch_pers_ids,
+            case_ids=batch_case_ids,
+            vib_ids=batch_vib_ids,
+            tam_ids=batch_tam_ids,
             head_idxs=batch_head_ids,
             deprel_idxs=batch_deprel_ids,
             word_mask=batch_word_mask
@@ -333,7 +393,14 @@ class TaggerDataset(Dataset):
             upos_type_idxs = [self.vocabs[UPOS][upos] for upos in inst[UPOS]]
             xpos_type_idxs = [self.vocabs[XPOS][xpos] for xpos in inst[XPOS]]
             feats_type_idxs = [self.vocabs[FEATS][feats] for feats in inst[FEATS]]
+            cat_type_idxs = [self.vocabs[CAT][cat] for cat in inst[CAT]]
+            gen_type_idxs = [self.vocabs[GEN][gen] for gen in inst[GEN]]
             num_type_idxs = [self.vocabs[NUM][num] for num in inst[NUM]]
+            pers_type_idxs = [self.vocabs[PERS][pers] for pers in inst[PERS]]
+            case_type_idxs = [self.vocabs[CASE][case] for case in inst[CASE]]
+            vib_type_idxs = [self.vocabs[VIB][vib] for vib in inst[VIB]]
+            tam_type_idxs = [self.vocabs[TAM][tam] for tam in inst[TAM]]
+
 
             assert len(edit_type_idxs) == len(inst['words'])
 
@@ -355,7 +422,13 @@ class TaggerDataset(Dataset):
                 upos_type_idxs=upos_type_idxs,
                 xpos_type_idxs=xpos_type_idxs,
                 feats_type_idxs=feats_type_idxs,
+                cat_type_idxs=cat_type_idxs,
+                gen_type_idxs=gen_type_idxs,
                 num_type_idxs=num_type_idxs,
+                pers_type_idxs=pers_type_idxs,
+                case_type_idxs=case_type_idxs,
+                vib_type_idxs=vib_type_idxs,
+                tam_type_idxs=tam_type_idxs,
                 head_idxs=head_idxs,
                 deprel_idxs=deprel_idxs,
                 word_mask=word_mask
@@ -379,12 +452,25 @@ class TaggerDataset(Dataset):
         batch_upos_type_idxs = []
         batch_xpos_type_idxs = []
         batch_feats_type_idxs = []
-        batch_num_type_idxs = []
+        batch_cat_type_idxs =[]
+        batch_gen_type_idxs =[]
+        batch_num_type_idxs =[]
+        batch_pers_type_idxs =[]
+        batch_case_type_idxs = []
+        batch_vib_type_idxs =[]
+        batch_tam_type_idxs =[]
 
 
-        batch_upos_ids, batch_xpos_ids, batch_feats_ids, batch_num_ids = [], [], [], []
+        batch_upos_ids, batch_xpos_ids, batch_feats_ids = [], [], []
 
         batch_head_ids, batch_deprel_ids, batch_word_mask = [], [], []
+        batch_cat_ids = []
+        batch_gen_ids = []
+        batch_num_ids = []
+        batch_pers_ids = []
+        batch_case_ids = []
+        batch_vib_ids = []
+        batch_tam_ids = []
 
         max_word_num = max(batch_word_num)
         max_wordpiece_num = max([len(inst.piece_idxs) for inst in batch])
@@ -405,8 +491,13 @@ class TaggerDataset(Dataset):
                                         [-100] * (max_word_num - inst.word_num))
             batch_feats_type_idxs.extend(inst.feats_type_idxs +
                                          [-100] * (max_word_num - inst.word_num))
-            batch_num_type_idxs.extend(inst.num_type_idxs +
-                                        [-100] * (max_word_num - inst.word_num))
+            batch_cat_type_idxs.extend(inst.cat_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_gen_type_idxs.extend(inst.gen_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_num_type_idxs.extend(inst.num_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_pers_type_idxs.extend(inst.pers_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_case_type_idxs.extend(inst.case_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_vib_type_idxs.extend(inst.vib_type_idxs + [-100] * (max_word_num - inst.word_num))
+            batch_tam_type_idxs.extend(inst.tam_type_idxs + [-100] * (max_word_num - inst.word_num))
 
             # head, deprel
             batch_head_ids.append(inst.head_idxs + [0] * (max_word_num - inst.word_num))
@@ -416,7 +507,14 @@ class TaggerDataset(Dataset):
             batch_upos_ids.append(inst.upos_type_idxs + [0] * (max_word_num - inst.word_num))
             batch_xpos_ids.append(inst.xpos_type_idxs + [0] * (max_word_num - inst.word_num))
             batch_feats_ids.append(inst.feats_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_cat_ids.append(inst.cat_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_gen_ids.append(inst.gen_type_idxs + [0] * (max_word_num - inst.word_num))
             batch_num_ids.append(inst.num_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_pers_ids.append(inst.pers_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_case_ids.append(inst.case_type_idxs + [0] * (max_word_num - inst.word_num)) 
+            batch_vib_ids.append(inst.vib_type_idxs + [0] * (max_word_num - inst.word_num))
+            batch_tam_ids.append(inst.tam_type_idxs + [0] * (max_word_num - inst.word_num))
+
 
 
         batch_piece_idxs = torch.tensor(batch_piece_idxs, dtype=torch.long, device=self.config.device)
@@ -427,12 +525,25 @@ class TaggerDataset(Dataset):
         batch_upos_type_idxs = torch.tensor(batch_upos_type_idxs, dtype=torch.long, device=self.config.device)
         batch_xpos_type_idxs = torch.tensor(batch_xpos_type_idxs, dtype=torch.long, device=self.config.device)
         batch_feats_type_idxs = torch.tensor(batch_feats_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_cat_type_idxs = torch.tensor(batch_cat_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_gen_type_idxs = torch.tensor(batch_gen_type_idxs, dtype=torch.long, device=self.config.device)
         batch_num_type_idxs = torch.tensor(batch_num_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_pers_type_idxs = torch.tensor(batch_pers_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_case_type_idxs = torch.tensor(batch_case_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_vib_type_idxs = torch.tensor(batch_vib_type_idxs, dtype=torch.long, device=self.config.device)
+        batch_tam_type_idxs = torch.tensor(batch_tam_type_idxs, dtype=torch.long, device=self.config.device)
+
 
 
         batch_upos_ids = torch.tensor(batch_upos_ids, dtype=torch.long, device=self.config.device)
         batch_xpos_ids = torch.tensor(batch_xpos_ids, dtype=torch.long, device=self.config.device)
+        batch_cat_ids = torch.tensor(batch_cat_ids, dtype=torch.long, device=self.config.device)
+        batch_gen_ids = torch.tensor(batch_gen_ids, dtype=torch.long, device=self.config.device)
         batch_num_ids = torch.tensor(batch_num_ids, dtype=torch.long, device=self.config.device)
+        batch_pers_ids = torch.tensor(batch_pers_ids, dtype=torch.long, device=self.config.device)
+        batch_case_ids = torch.tensor(batch_case_ids, dtype=torch.long, device=self.config.device)
+        batch_vib_ids = torch.tensor(batch_vib_ids, dtype=torch.long, device=self.config.device)
+        batch_tam_ids = torch.tensor(batch_tam_ids, dtype=torch.long, device=self.config.device)
 
         batch_head_ids = torch.tensor(batch_head_ids, dtype=torch.long, device=self.config.device)
         batch_deprel_ids = torch.tensor(batch_deprel_ids, dtype=torch.long, device=self.config.device)
@@ -451,11 +562,23 @@ class TaggerDataset(Dataset):
             upos_type_idxs=batch_upos_type_idxs,
             xpos_type_idxs=batch_xpos_type_idxs,
             feats_type_idxs=batch_feats_type_idxs,
-            num_type_idxs=batch_num_type_idxs,
+            cat_type_idxs = batch_cat_type_idxs,
+            gen_type_idxs = batch_gen_type_idxs,
+            num_type_idxs = batch_num_type_idxs,
+            pers_type_idxs = batch_pers_type_idxs,
+            case_type_idxs = batch_case_type_idxs,
+            vib_type_idxs = batch_vib_type_idxs,
+            tam_type_idxs = batch_tam_type_idxs,
             upos_ids=batch_upos_ids,
             xpos_ids=batch_xpos_ids,
             feats_ids=batch_xpos_ids,
+            cat_ids=batch_cat_ids,
+            gen_ids=batch_gen_ids,
             num_ids=batch_num_ids,
+            pers_ids=batch_pers_ids,
+            case_ids=batch_case_ids,
+            vib_ids=batch_vib_ids,
+            tam_ids=batch_tam_ids,
             head_idxs=batch_head_ids,
             deprel_idxs=batch_deprel_ids,
             word_mask=batch_word_mask
