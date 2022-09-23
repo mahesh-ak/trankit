@@ -24,8 +24,9 @@ def set_lemma(doc, preds, obmit_tag=None, training_mode=False):
                             del token[XPOS]
                         if FEATS in token:
                             del token[FEATS]
-                        if NUM in token:
-                            del token[NUM]
+                        for new in NEW:
+                            if new in token:
+                                del token[new]
                         if HEAD in token:
                             del token[HEAD]
                         if DEPREL in token:

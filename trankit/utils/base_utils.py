@@ -72,7 +72,8 @@ def get_ud_performance_table(score):
     out = ''
     out += "Metric     | Precision |    Recall |  F1 Score | AligndAcc" + '\n'
     out += "-----------+-----------+-----------+-----------+-----------" + '\n'
-    for metric in ["Tokens", "Sentences", "Words", "UPOS", "XPOS", "UFeats", "NUM","AllTags", "Lemmas", "UAS", "LAS",
+    for metric in ["Tokens", "Sentences", "Words", "UPOS", "XPOS", "UFeats", "CAT", "GEN", "NUM", "PERS", "CASE", "VIB", "TAM",
+                  "AllTags", "Lemmas", "UAS", "LAS",
                    "CLAS", "MLAS", "BLEX"]:
         out += "{:11}|{:10.2f} |{:10.2f} |{:10.2f} |{}".format(
             metric,
@@ -139,7 +140,14 @@ def tget_output_doc(conllu_doc):
                 out_sent.append({ID: '{}-{}'.format(mwt['start'], mwt['end']), TEXT: mwt['text']})
 
             out_sent.append({ID: f'{word_id}', TEXT: word[TEXT],
-                             UPOS: word.get(UPOS, '_'), XPOS: word.get(XPOS, '_'), FEATS: word.get(FEATS, '_'), NUM: word.get(NUM,'_'), 
+                             UPOS: word.get(UPOS, '_'), XPOS: word.get(XPOS, '_'), FEATS: word.get(FEATS, '_'),
+                             CAT : word.get(CAT, '_'),
+                             GEN : word.get(GEN, '_'),
+                             NUM : word.get(NUM, '_'),
+                             PERS: word.get( PERS, '_'),
+                             CASE: word.get( CASE, '_'),
+                             VIB : word.get(VIB, '_'),
+                             TAM : word.get(TAM, '_'),
                              HEAD: word.get(HEAD, f'{word_id - 1}'), DEPREL: word.get(DEPREL, '_')})
         out_doc.append(out_sent)
     return out_doc
@@ -175,8 +183,9 @@ def get_output_doc(tokenized_doc, conllu_doc):
                     tmp[XPOS] = word[XPOS]
                 if FEATS in word and word[FEATS] != '_':
                     tmp[FEATS] = word[FEATS]
-                if NUM in word and word[NUM] != '_':
-                    tmp[NUM] = word[NUM]
+                for new in NEW:
+                    if new in word and word[new] != '_':
+                        tmp[new] = word[new]
                 if HEAD in word and word[HEAD] != '_':
                     tmp[HEAD] = word[HEAD]
                 if DEPREL in word and word[DEPREL] != '_':
@@ -193,8 +202,9 @@ def get_output_doc(tokenized_doc, conllu_doc):
                     out_sent[-1][EXPANDED][expand_id][XPOS] = word[XPOS]
                 if FEATS in word and word[FEATS] != '_':
                     out_sent[-1][EXPANDED][expand_id][FEATS] = word[FEATS]
-                if NUM in word and word[NUM] != '_':
-                    out_sent[-1][EXPANDED][expand_id][NUM] = word[NUM]
+                for new in NEW:
+                    if new in word and word[new] != '_':
+                        out_sent[-1][EXPANDED][expand_id][new] = word[new]
 
                 if HEAD in word and word[HEAD] != '_':
                     out_sent[-1][EXPANDED][expand_id][HEAD] = word[HEAD]

@@ -28,7 +28,6 @@ def write_to_conllu_file(conllu_doc, conllu_pred_fpath):
     with open(conllu_pred_fpath, 'w') as f:
         f.write('\n\n'.join(out_doc) + '\n')
 
-
 def get_examples_from_conllu(wordpiece_splitter, max_input_length, tokenized_doc):
     examples = []
     conllu_doc = {}
@@ -43,7 +42,13 @@ def get_examples_from_conllu(wordpiece_splitter, max_input_length, tokenized_doc
             UPOS: [],
             XPOS: [],
             FEATS: [],
+            CAT: [],
+            GEN: [],
             NUM: [],
+            PERS: [],
+            CASE: [],
+            VIB: [],
+            TAM: [],
             HEAD: [],
             DEPREL: []
         }
@@ -70,7 +75,13 @@ def get_examples_from_conllu(wordpiece_splitter, max_input_length, tokenized_doc
                     upos = '_'
                     xpos = '_'
                     feats = '_'
+                    cat = '_'
+                    gen = '_'
                     num = '_'
+                    pers = '_'
+                    case = '_'
+                    vib = '_'
+                    tam = '_'
 
                     head = 0
                     deprel = '_'
@@ -88,7 +99,13 @@ def get_examples_from_conllu(wordpiece_splitter, max_input_length, tokenized_doc
                     new_ex[UPOS].append(upos)
                     new_ex[XPOS].append(xpos)
                     new_ex[FEATS].append(feats)
+                    new_ex[CAT].append(cat)
+                    new_ex[GEN].append(gen)
                     new_ex[NUM].append(num)
+                    new_ex[PERS].append(pers)
+                    new_ex[CASE].append(case)
+                    new_ex[VIB].append(vib)
+                    new_ex[TAM].append(tam)
 
                     new_ex[HEAD].append(head)
                     new_ex[DEPREL].append(deprel)
@@ -100,8 +117,13 @@ def get_examples_from_conllu(wordpiece_splitter, max_input_length, tokenized_doc
                 upos = '_'
                 xpos = '_'
                 feats = '_'
+                cat = '_'
+                gen = '_'
                 num = '_'
-
+                pers = '_'
+                case = '_'
+                vib = '_'
+                tam = '_'
                 head = 0
                 deprel = '_'
 
@@ -118,7 +140,13 @@ def get_examples_from_conllu(wordpiece_splitter, max_input_length, tokenized_doc
                 new_ex[UPOS].append(upos)
                 new_ex[XPOS].append(xpos)
                 new_ex[FEATS].append(feats)
+                new_ex[CAT].append(cat)
+                new_ex[GEN].append(gen)
                 new_ex[NUM].append(num)
+                new_ex[PERS].append(pers)
+                new_ex[CASE].append(case)
+                new_ex[VIB].append(vib)
+                new_ex[TAM].append(tam)
 
                 new_ex[HEAD].append(head)
                 new_ex[DEPREL].append(deprel)
@@ -136,7 +164,8 @@ def get_examples_from_conllu(wordpiece_splitter, max_input_length, tokenized_doc
 
 def tget_examples_from_conllu(tokenizer, max_input_length, conllu_file, get_vocab=False):
     vocabs = {
-        LEMMA: {}, UPOS: {'_': 0}, XPOS: {'_': 0}, FEATS: {'_': 0}, HEAD: {'_': 0}, NUM: {'_':0},
+        LEMMA: {}, UPOS: {'_': 0}, XPOS: {'_': 0}, FEATS: {'_': 0}, HEAD: {'_': 0}, 
+        CAT: {'_': 0}, GEN: {'_': 0}, NUM: {'_': 0}, PERS: {'_': 0}, CASE: {'_': 0}, VIB: {'_': 0}, TAM: {'_': 0},
         DEPREL: {
             '_': 0
         },
@@ -157,7 +186,13 @@ def tget_examples_from_conllu(tokenizer, max_input_length, conllu_file, get_voca
             UPOS: [],
             XPOS: [],
             FEATS: [],
+            CAT: [],
+            GEN: [],
             NUM: [],
+            PERS: [],
+            CASE: [],
+            VIB: [],
+            TAM: [],
             HEAD: [],
             DEPREL: []
         }
@@ -183,7 +218,13 @@ def tget_examples_from_conllu(tokenizer, max_input_length, conllu_file, get_voca
                     upos = token.get(UPOS, '_')
                     xpos = token.get(XPOS, '_')
                     feats = token.get(FEATS, '_')
-                    num = token.get(NUM, '_')
+                    cat  = token.get(CAT, '_')
+                    gen  = token.get(GEN, '_')
+                    num  = token.get(NUM, '_')
+                    pers  = token.get(PERS, '_')
+                    case  = token.get(CASE, '_')
+                    vib  = token.get(VIB, '_')
+                    tam  = token.get(TAM, '_')
 
                     edit_operation = '0'
 
@@ -194,7 +235,13 @@ def tget_examples_from_conllu(tokenizer, max_input_length, conllu_file, get_voca
                     vocabs[UPOS][upos] = vocabs[UPOS].get(upos, len(vocabs[UPOS]))
                     vocabs[XPOS][xpos] = vocabs[XPOS].get(xpos, len(vocabs[XPOS]))
                     vocabs[FEATS][feats] = vocabs[FEATS].get(feats, len(vocabs[FEATS]))
-                    vocabs[NUM][num] = vocabs[NUM].get(num, len(vocabs[NUM]))
+                    vocabs[CAT][cat] = vocabs[CAT].get(cat,len(vocabs[CAT]))
+                    vocabs[GEN][gen] = vocabs[GEN].get(gen,len(vocabs[GEN]))
+                    vocabs[NUM][num] = vocabs[NUM].get(num,len(vocabs[NUM]))
+                    vocabs[PERS][pers] = vocabs[PERS].get(pers,len(vocabs[PERS]))
+                    vocabs[CASE][case] = vocabs[CASE].get(case,len(vocabs[CASE]))
+                    vocabs[VIB][vib] = vocabs[VIB].get(vib,len(vocabs[VIB]))
+                    vocabs[TAM][tam] = vocabs[TAM].get(tam,len(vocabs[TAM]))
 
                     vocabs[DEPREL][deprel] = vocabs[DEPREL].get(deprel, len(vocabs[DEPREL]))
                 else:
@@ -203,7 +250,13 @@ def tget_examples_from_conllu(tokenizer, max_input_length, conllu_file, get_voca
                     upos = '_'
                     xpos = '_'
                     feats = '_'
+                    cat = '_'
+                    gen = '_'
                     num = '_'
+                    pers = '_'
+                    case = '_'
+                    vib = '_'
+                    tam = '_'
 
                     head = 0
                     deprel = '_'
@@ -221,8 +274,13 @@ def tget_examples_from_conllu(tokenizer, max_input_length, conllu_file, get_voca
                 new_ex[UPOS].append(upos)
                 new_ex[XPOS].append(xpos)
                 new_ex[FEATS].append(feats)
+                new_ex[CAT].append(cat)
+                new_ex[GEN].append(gen)
                 new_ex[NUM].append(num)
-
+                new_ex[PERS].append(pers)
+                new_ex[CASE].append(case)
+                new_ex[VIB].append(vib)
+                new_ex[TAM].append(tam)
                 new_ex[HEAD].append(head)
                 new_ex[DEPREL].append(deprel)
 

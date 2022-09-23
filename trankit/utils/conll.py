@@ -152,7 +152,7 @@ class CoNLL:
         """
         token_conll = ['_' for i in range(FIELD_NUM)]
         for key in token_dict:
-            if key == NUM:
+            if key in NEW:
                 continue
             if key == ID:
                 token_conll[FIELD_TO_IDX[key]] = '-'.join([str(x) for x in token_dict[key]]) if isinstance(

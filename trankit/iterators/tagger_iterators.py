@@ -6,9 +6,9 @@ instance_fields = [
     'words', 'word_num', 'word_ids', 'word_span_idxs',
     'piece_idxs', 'attention_masks', 'word_lens',
     'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs', 
-    'head_idxs', 'deprel_idxs', 'word_mask'
-] + [f'{new}_type_idxs' for new in NEW]
-
+    'head_idxs', 'deprel_idxs', 'word_mask', 
+    'cat_type_idxs', 'gen_type_idxs', 'num_type_idxs', 'pers_type_idxs', 'case_type_idxs', 'vib_type_idxs', 'tam_type_idxs'
+]
 batch_fields = [
     'sent_index',
     'words', 'word_num', 'word_ids', 'word_span_idxs',
@@ -16,7 +16,9 @@ batch_fields = [
     'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs',
     'upos_ids', 'xpos_ids', 'feats_ids',
     'head_idxs', 'deprel_idxs', 'word_mask'
-] + [f'{new}_type_idxs' for new in NEW] + [f'{new}_ids' for new in NEW]
+    'cat_type_idxs', 'gen_type_idxs', 'num_type_idxs', 'pers_type_idxs', 'case_type_idxs', 'vib_type_idxs', 'tam_type_idxs',
+    'cat_ids', 'gen_ids', 'num_ids', 'pers_ids', 'case_ids', 'vib_ids', 'tam_ids'
+]
 Instance = namedtuple('Instance', field_names=instance_fields)
 
 Batch = namedtuple('Batch', field_names=batch_fields)
@@ -68,18 +70,17 @@ class TaggerDatasetLive(Dataset):
             if len(flat_pieces) > self.max_input_length - 2:
                 sub_insts = []
                 cur_inst = deepcopy(inst)
-                for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, 'flat_pieces'] + NEW:
+                for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, CAT, GEN, NUM, PERS, CASE, VIB, TAM, HEAD, DEPREL, 'flat_pieces']:
                     cur_inst[key] = []
-
                 for i in range(len(inst['words'])):
-                    for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL] + NEW:
+                    for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, CAT, GEN, NUM, PERS, CASE, VIB, TAM,HEAD, DEPREL]:
                         cur_inst[key].append(inst[key][i])
                     cur_inst['flat_pieces'].extend(pieces[i])
                     if len(cur_inst['flat_pieces']) >= self.max_input_length - 10:
                         sub_insts.append(cur_inst)
 
                         cur_inst = deepcopy(inst)
-                        for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, 'flat_pieces'] + NEW:
+                        for key in ['words', 'word_ids', LEMMA, UPOS, XPOS, FEATS, CAT, GEN, NUM, PERS, CASE, VIB, TAM,HEAD, DEPREL, 'flat_pieces']:
                             cur_inst[key] = []
 
                 if len(cur_inst['flat_pieces']) > 0:
