@@ -11,6 +11,7 @@ import io
 FIELD_NUM = 10
 FIELD_SEP = "=|"
 FIELD_EQ = "-"
+USE_SPLIT = True
 
 ID = 'id'
 TEXT = 'text'
@@ -160,8 +161,8 @@ class CoNLL:
             elif key == ID:
                 token_conll[FIELD_TO_IDX[key]] = '-'.join([str(x) for x in token_dict[key]]) if isinstance(
                     token_dict[key], tuple) else str(token_dict[key])
-            elif key == FEATS:
-                token_conll[FIELD_TO_IDX[key]] = FIELD_SEP.join([str(token_dict[new]) for new in NEW])
+            elif key == FEATS and USE_SPLIT:
+                token_conll[FIELD_TO_IDX[key]] = FIELD_SEP.join([str(token_dict[new]) for new in NEW] + [other+FIELD_EQ for other in ['chunkID','stype','voicetype']])
             elif key in FIELD_TO_IDX:
                 token_conll[FIELD_TO_IDX[key]] = str(token_dict[key])
         # when a word (not mwt token) without head is found, we insert dummy head as required by the UD eval script

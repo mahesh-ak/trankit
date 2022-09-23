@@ -577,7 +577,7 @@ def main():
         
         if not args.count:
             to_print = []
-            for metric in ["UAS","LAS","CAT","GEN","NUM","PERS","CASE","VIB","TAM","UFeats"]:
+            for metric in ["UAS","LAS","CAT","GEN","NUM","PERS","CASE","VIB","TAM","UFeats","UPOS","XPOS"]:
                 to_print.append(f'{metric}: {round(100*evaluation[metric].f1,2)}')
             print(' | '.join(to_print))
 

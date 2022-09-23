@@ -84,7 +84,7 @@ def get_ud_performance_table(score):
                                                                            metric].aligned_accuracy is not None else ""
         ) + '\n'
     to_print = []
-    for metric in ["UAS","LAS","CAT","GEN","NUM","PERS","CASE","VIB","TAM","UFeats"]:
+    for metric in ["UAS","LAS","CAT","GEN","NUM","PERS","CASE","VIB","TAM","UFeats","UPOS","XPOS"]:
         to_print.append(f'{metric}: {round(100*score[metric].f1,2)}')
     out += ' | '.join(to_print) 
     out += '\n'
