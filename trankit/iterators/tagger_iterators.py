@@ -6,18 +6,18 @@ instance_fields = [
     'words', 'word_num', 'word_ids', 'word_span_idxs',
     'piece_idxs', 'attention_masks', 'word_lens',
     'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs', 
-    'head_idxs', 'deprel_idxs', 'word_mask', 
-    'cat_type_idxs', 'gen_type_idxs', 'num_type_idxs', 'pers_type_idxs', 'case_type_idxs', 'vib_type_idxs', 'tam_type_idxs'
+    'cat_type_idxs', 'gen_type_idxs', 'num_type_idxs', 'pers_type_idxs', 'case_type_idxs', 'vib_type_idxs', 'tam_type_idxs',
+    'head_idxs', 'deprel_idxs', 'word_mask' 
 ]
 batch_fields = [
     'sent_index',
     'words', 'word_num', 'word_ids', 'word_span_idxs',
     'piece_idxs', 'attention_masks', 'word_lens',
     'edit_type_idxs', 'upos_type_idxs', 'xpos_type_idxs', 'feats_type_idxs',
-    'upos_ids', 'xpos_ids', 'feats_ids',
-    'head_idxs', 'deprel_idxs', 'word_mask'
     'cat_type_idxs', 'gen_type_idxs', 'num_type_idxs', 'pers_type_idxs', 'case_type_idxs', 'vib_type_idxs', 'tam_type_idxs',
-    'cat_ids', 'gen_ids', 'num_ids', 'pers_ids', 'case_ids', 'vib_ids', 'tam_ids'
+    'upos_ids', 'xpos_ids', 'feats_ids',
+    'cat_ids', 'gen_ids', 'num_ids', 'pers_ids', 'case_ids', 'vib_ids', 'tam_ids',
+    'head_idxs', 'deprel_idxs', 'word_mask'
 ]
 Instance = namedtuple('Instance', field_names=instance_fields)
 

@@ -101,8 +101,8 @@ import unittest
 
 # CoNLL-U column names
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC = range(10)
-CAT, GEN, NUM, PERS, CASE, VIB, TAM = range(10,17)
-
+LEN_NEW = 7
+CAT, GEN, NUM, PERS, CASE, VIB, TAM = range(10,10+LEN_NEW)
 # Content and functional relations
 CONTENT_DEPRELS = {
     "nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp", "obl", "vocative",
@@ -163,7 +163,7 @@ def load_conllu(file):
             # Span of this word (or MWT, see below) within ud_representation.characters.
             self.span = span
             # 10 columns of the CoNLL-U file: ID, FORM, LEMMA,...
-            self.columns = columns + [[]] 
+            self.columns = columns + [[]]*LEN_NEW
             # is_multiword==True means that this word is part of a multi-word token.
             # In that case, self.span marks the span of the whole multi-word token.
             self.is_multiword = is_multiword
@@ -569,6 +569,12 @@ def main():
                     "{:10.2f}".format(100 * evaluation[metric].aligned_accuracy) if evaluation[
                                                                                         metric].aligned_accuracy is not None else ""
                 ))
+        
+        if not args.count:
+            to_print = []
+            for metric in ["UAS","LAS","CAT","GEN","NUM","PERS","CASE","VIB","TAM"]:
+                to_print.append(f'{metric}: {round(100*evaluation[metric].f1,2)}')
+            print(' | '.join(to_print))
 
 
 if __name__ == "__main__":
