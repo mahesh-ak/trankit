@@ -9,6 +9,8 @@ import os
 import io
 
 FIELD_NUM = 10
+FIELD_SEP = "=|"
+FIELD_EQ = "-"
 
 ID = 'id'
 TEXT = 'text'
@@ -39,7 +41,8 @@ TAM = 'tam'
 
 NEW = [CAT, GEN, NUM, PERS, CASE, VIB, TAM]
 
-FIELD_TO_IDX = {ID: 0, TEXT: 1, LEMMA: 2, UPOS: 3, XPOS: 4, FEATS: 5, HEAD: 6, DEPREL: 7, DEPS: 8, MISC: 9}
+FIELD_TO_IDX = {ID: 0, TEXT: 1, LEMMA: 2, UPOS: 3, XPOS: 4, FEATS: 5, HEAD: 6, DEPREL: 7, DEPS: 8, MISC: 9,
+                CAT: 10, GEN: 11, NUM: 12, PERS: 13, CASE: 14, VIB: 15, TAM: 16}
 
 
 class CoNLL:
@@ -97,7 +100,7 @@ class CoNLL:
         for field in FIELD_TO_IDX:
             if field in NEW:
                 feats_value = token_conll[FIELD_TO_IDX[FEATS]]
-                value = [feat for feat in feats_value.split('=|') if feat.split('-',1)[0] == field][0]
+                value = [feat for feat in feats_value.split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0] == field][0]
             else:
                 value = token_conll[FIELD_TO_IDX[field]]
             if value != '_':
@@ -154,9 +157,11 @@ class CoNLL:
         for key in token_dict:
             if key in NEW:
                 continue
-            if key == ID:
+            elif key == ID:
                 token_conll[FIELD_TO_IDX[key]] = '-'.join([str(x) for x in token_dict[key]]) if isinstance(
                     token_dict[key], tuple) else str(token_dict[key])
+            elif key == FEATS:
+                token_conll[FIELD_TO_IDX[key]] = FIELD_SEP.join([str(token_dict[new]) for new in NEW])
             elif key in FIELD_TO_IDX:
                 token_conll[FIELD_TO_IDX[key]] = str(token_dict[key])
         # when a word (not mwt token) without head is found, we insert dummy head as required by the UD eval script

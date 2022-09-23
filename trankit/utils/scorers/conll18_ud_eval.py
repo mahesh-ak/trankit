@@ -103,6 +103,8 @@ import unittest
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC = range(10)
 LEN_NEW = 7
 CAT, GEN, NUM, PERS, CASE, VIB, TAM = range(10,10+LEN_NEW)
+FIELD_SEP = "=|"
+FIELD_EQ = "-"
 # Content and functional relations
 CONTENT_DEPRELS = {
     "nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp", "obl", "vocative",
@@ -119,6 +121,10 @@ UNIVERSAL_FEATURES = {
     "PronType", "NumType", "Poss", "Reflex", "Foreign", "Abbr", "Gender",
     "Animacy", "Number", "Case", "Definite", "Degree", "VerbForm", "Mood",
     "Tense", "Aspect", "Voice", "Evident", "Polarity", "Person", "Polite"
+}
+
+NEW_FEATURES = {
+    "cat", "gen", "num", "pers", "case", "vib", "tam"
 }
 
 
@@ -172,17 +178,16 @@ def load_conllu(file):
             # List of references to UDWord instances representing functional-deprel children.
             self.functional_children = []
             # Only consider universal FEATS.
-            self.columns[FEATS] = columns[FEATS]
-            #self.columns[FEATS] = "|".join(sorted(feat for feat in columns[FEATS].split("|")))
-                                                  #if feat.split("=", 1)[0] in UNIVERSAL_FEATURES))
+            self.columns[FEATS] = FIELD_SEP.join([feat for feat in columns[FEATS].split(FIELD_SEP)
+                                                  if feat.split(FIELD_EQ, 1)[0] in NEW_FEATURES])
             # New features
-            self.columns[CAT] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='cat']
-            self.columns[GEN] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='gen']
-            self.columns[NUM] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='num']
-            self.columns[PERS] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='pers']
-            self.columns[CASE] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='case']
-            self.columns[VIB] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='vib']
-            self.columns[TAM] = [feat for feat in columns[FEATS].split("=|") if feat.split("-",1)[0]=='tam']
+            self.columns[CAT] = [feat for feat in columns[FEATS].split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0]=='cat']
+            self.columns[GEN] = [feat for feat in columns[FEATS].split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0]=='gen']
+            self.columns[NUM] = [feat for feat in columns[FEATS].split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0]=='num']
+            self.columns[PERS] = [feat for feat in columns[FEATS].split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0]=='pers']
+            self.columns[CASE] = [feat for feat in columns[FEATS].split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0]=='case']
+            self.columns[VIB] = [feat for feat in columns[FEATS].split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0]=='vib']
+            self.columns[TAM] = [feat for feat in columns[FEATS].split(FIELD_SEP) if feat.split(FIELD_EQ,1)[0]=='tam']
 
             # Let's ignore language-specific deprel subtypes.
             self.columns[DEPREL] = columns[DEPREL].split(":")[0]
@@ -572,7 +577,7 @@ def main():
         
         if not args.count:
             to_print = []
-            for metric in ["UAS","LAS","CAT","GEN","NUM","PERS","CASE","VIB","TAM"]:
+            for metric in ["UAS","LAS","CAT","GEN","NUM","PERS","CASE","VIB","TAM","UFeats"]:
                 to_print.append(f'{metric}: {round(100*evaluation[metric].f1,2)}')
             print(' | '.join(to_print))
 
